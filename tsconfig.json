@@ -1,18 +1,19 @@
 {
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "target": "es6",
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true,
-    "sourceMap": false,
-    "watch": true,
-    "esModuleInterop": true,
-    "baseUrl": "./",
-    "paths": {
-      "*": ["node_modules/*", "libs/*", "src/*"]
-    }
-  }
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "target": "es6",
+        "skipDefaultLibCheck": true,
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "watch": true,
+        "esModuleInterop": true,
+        "baseUrl": "./",
+        "paths": {
+            "*": ["node_modules/*", "libs/*", "src/*"]
+        }
+    },
+    "include": ["./src", "./libs"]
 }

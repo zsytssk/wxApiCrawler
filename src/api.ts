@@ -1,10 +1,10 @@
 /** 所有的类型存储在的地方 */
-interface ApiMap {
+export interface ApiMap {
     [key: string]: ApiBase;
 }
 
 /** 所有的api的type */
-enum ApiType {
+export enum ApiType {
     Str = 'string',
     Bool = 'boolean',
     Undefined = 'undefined',
@@ -15,23 +15,23 @@ enum ApiType {
     Namespace = 'namespace',
 }
 
-type RefApi = string;
+export type RefApi = string;
 /** 所有的api基本类型包含的属性 */
-interface ApiBase {
+export interface ApiBase {
     name: string;
     comment: string;
     type: ApiType;
     ref?: RefApi;
 }
 
-interface ApiFun extends ApiBase {
+export interface ApiFun extends ApiBase {
     id: string;
-    params: ApiBase[];
-    return: ApiBase | ApiBase[];
+    params?: ApiBase[];
+    return?: ApiBase | ApiBase[];
     type: ApiType.Fun;
 }
 
-interface ApiObj extends ApiBase {
+export interface ApiObj extends ApiBase {
     id: string;
     type: ApiType.Obj;
     props: {
@@ -39,33 +39,10 @@ interface ApiObj extends ApiBase {
     };
 }
 
-interface ApiNameSpace extends ApiBase {
+export interface ApiNameSpace extends ApiBase {
     id: string;
     type: ApiType.Namespace;
     props: {
         [key: string]: ApiBase;
     };
 }
-
-const Test: ApiNameSpace = {
-    name: 'wx',
-    id: '1',
-    type: ApiType.Namespace,
-    comment: '微信模块',
-    props: {
-        getUpdateManager: {
-            name: 'getUpdateManager',
-            params: [],
-            return: {
-                name: 'return',
-                comment: 'xxxx',
-                type: ApiType.Obj,
-                ref: '2',
-            },
-        } as ApiFun,
-    },
-};
-
-const UpdateManager = {
-    id: '2',
-};
