@@ -2,6 +2,18 @@ import { ApiType, ApiBase, ApiFun, ApiObj } from '../api';
 import { matchTable } from './matchTable';
 import { genId } from '../utils/utils';
 
+export function queryItem(
+    $: CheerioStatic,
+    ...params: [string, CheerioElement?]
+) {
+    const $con = $(...params);
+    const list: CheerioElement[] = [];
+    $con.each((index, item) => {
+        list.push(item);
+    });
+    return list;
+}
+
 type FilterProps = {
     tag?: string[];
     class_name?: string;

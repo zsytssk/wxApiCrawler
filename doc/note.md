@@ -1,7 +1,25 @@
--   @todo 先做一个简单的
-    -   safeArea 怎么处理
+-   @todo 先做一个简单的 wx.getUpdateManager
 
 ## 2020-03-19 13:42:24
+
+-   @err 有问题的
+
+```
+Touch
+RenderingContext
+Image
+wx.navigateToMiniProgram
+wx.getUserInfo
+UserInfo
+FriendInfo
+KVData
+UserGameData
+AuthSetting
+SubscriptionsSetting
+IBeaconInfo
+```
+
+-   @opt parseHtml 的逻辑还需要优化
 
 -   @ques findNextSubObj 如果返回的是简单类型会怎样
 
