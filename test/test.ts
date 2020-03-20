@@ -76,7 +76,7 @@ function parseSubChildRawInfo(
     item: CheerioElement,
     $: CheerioStatic,
 ): SubChildRawInfo {
-    const tag_list = ['h1', 'h2', 'h3', 'h4'];
+    const tag_list = ['h1', 'h2', 'h3', 'h4', 'h5'];
     const tag = item.tagName;
     if (tag_list.indexOf(tag) !== -1) {
         const level = Number(tag[1]);

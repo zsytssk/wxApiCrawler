@@ -1,6 +1,7 @@
 import { ApiType, ApiBase, ApiObj, ApiFun } from '../src/api';
 import { SubChildRawInfo, SubChildRawType } from './test';
 import { TableInfo } from 'parseHtml/parseTable';
+import { stringify } from '../src/utils/stringify';
 
 const match_arr: MatchItem[] = [];
 
@@ -14,7 +15,6 @@ type MatchItem = MatchRawItem & {
     match_fun: (match_info: SubChildRawInfo) => boolean;
 };
 export function runMatch(item: SubChildRawInfo) {
-    // console.log(`1:>`, item);
     for (let len = match_arr.length, i = len - 1; i >= 0; i--) {
         const is_match = match_arr[i].match_fun(item);
         if (is_match) {
@@ -22,12 +22,14 @@ export function runMatch(item: SubChildRawInfo) {
         }
     }
 }
-export function putMatch(name: string, raw_item: MatchRawItem) {
+export function putMatch(name: string, raw_item: MatchRawItem, item?: ApiBase) {
     const { type, level } = raw_item;
-    const item = {
-        name,
-        type,
-    } as ApiBase;
+    if (!item) {
+        item = {
+            name,
+            type,
+        } as ApiBase;
+    }
     const match_sub_arr = [];
     const match_item = {
         type,
@@ -41,10 +43,12 @@ export function putMatch(name: string, raw_item: MatchRawItem) {
 
     match_item.match_fun = createMatchFun(match_item);
     match_arr.push(match_item);
+
+    return item;
 }
 /** 抽离 match 的信息 */
 export function extraMatchResult() {
-    console.log(match_arr);
+    console.log(stringify(match_arr, 10));
     return match_arr[0].item;
 }
 
@@ -115,14 +119,16 @@ function createMatchObjFun(own_item: MatchItem): MatchItem['match_fun'] {
                     item.props = {};
                 }
                 const { name, comment, type } = con_item;
-                item.props[con_item.name] = {
+                const new_item = {
                     name,
                     comment,
                     type,
                 };
                 if (type === ApiType.Fun || type === ApiType.Obj) {
-                    putMatch(name, { type, level: level + 1 });
+                    putMatch(name, { type, level: level + 1 }, new_item);
                 }
+
+                item.props[con_item.name] = new_item;
             }
         }
         return true;
@@ -154,7 +160,7 @@ function createMatchPrimeFun(own_item: MatchItem): MatchItem['match_fun'] {
 
 /** 创建注释监听 */
 function createMatchSubCommentFun(item: ApiBase): MatchItem['match_fun'] {
-    return (raw_item: SubChildRawInfo) => {
+    const fn = (raw_item: SubChildRawInfo) => {
         const { con, type } = raw_item;
         if (type === SubChildRawType.Text) {
             item.comment = con as string;
@@ -162,11 +168,14 @@ function createMatchSubCommentFun(item: ApiBase): MatchItem['match_fun'] {
         }
         return false;
     };
+
+    fn.fn_name = 'createMatchSubCommentFun';
+    return fn;
 }
 
 /** 创建函数参数监听 */
 function createMatchSubParamsFun(item: ApiFun): MatchItem['match_fun'] {
-    return (raw_item: SubChildRawInfo) => {
+    const fn = (raw_item: SubChildRawInfo) => {
         const { level: match_level, con, type } = raw_item;
 
         if (type === SubChildRawType.Text) {
@@ -176,16 +185,19 @@ function createMatchSubParamsFun(item: ApiFun): MatchItem['match_fun'] {
                 type,
             } as ApiBase;
             item.params = [param_item];
-            putMatch(name, { type, level: match_level });
+            putMatch(name, { type, level: match_level }, param_item);
             return true;
         }
         return false;
     };
+
+    fn.fn_name = 'createMatchSubParamsFun';
+    return fn;
 }
 
 /** 创建函数返回值监听 */
 function createMatchSubReturnFun(item: ApiFun): MatchItem['match_fun'] {
-    return (raw_item: SubChildRawInfo) => {
+    const fn = (raw_item: SubChildRawInfo) => {
         const { level: match_level, con, type } = raw_item;
 
         if (type === SubChildRawType.Text) {
@@ -200,6 +212,8 @@ function createMatchSubReturnFun(item: ApiFun): MatchItem['match_fun'] {
         }
         return false;
     };
+    fn.fn_name = 'createMatchSubReturnFun';
+    return fn;
 }
 
 function outMatch(item: MatchItem) {
