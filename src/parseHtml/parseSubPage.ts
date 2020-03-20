@@ -1,18 +1,10 @@
 import { ApiBase, ApiFun, ApiObj, ApiType } from '../api';
 import { base_url } from '../main';
-import { getUrl } from '../net';
+import { getUrl } from '../utils/net';
 import { genId } from '../utils/utils';
-import {
-    findNext,
-    findNextTable,
-    findNextCommentOrName,
-    queryItem,
-    queryAllItem,
-    findNextInfo,
-    detectSubType,
-    getFunName,
-} from './findItem';
+import { detectSubType, findNextInfo, getFunName } from './findItem';
 import { parseHtml } from './parseHtml';
+import { queryItem, queryAllItem, queryNext } from './query';
 
 export async function parseSubPage(url: string) {
     const html = await getUrl(base_url + url);
@@ -33,7 +25,7 @@ function parseFun($: CheerioStatic, name: string): Partial<ApiBase> {
     const h1 = queryItem($, 'h1', con_dom);
     const result = { name: fun_name, type: ApiType.Fun } as ApiFun;
     const section_list = queryAllItem($, 'h2', con_dom);
-    const comment_dom = findNext(h1);
+    const comment_dom = queryNext(h1);
     if (comment_dom) {
         const comment = $(comment_dom).text();
         result.comment = comment;
@@ -55,7 +47,7 @@ function parseFun($: CheerioStatic, name: string): Partial<ApiBase> {
             result.return = return_type;
         } else if (h2_text === '参数') {
             const params = [];
-            const name_dom = findNext(item);
+            const name_dom = queryNext(item);
             const id = $(name_dom).attr('id');
             const name = id.split('-')[1];
             const return_info = findNextInfo(item, $);

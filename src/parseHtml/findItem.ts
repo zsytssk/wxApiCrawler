@@ -1,86 +1,7 @@
 import { ApiType, ApiBase, ApiFun, ApiObj } from '../api';
 import { matchTable } from './matchTable';
 import { genId } from '../utils/utils';
-
-export function queryItem(
-    $: CheerioStatic,
-    ...params: [string, CheerioElement?]
-) {
-    return $(...params)[0];
-}
-export function queryAllItem(
-    $: CheerioStatic,
-    ...params: [string, CheerioElement?]
-) {
-    const $con = $(...params);
-    const list: CheerioElement[] = [];
-    $con.each((index, item) => {
-        list.push(item);
-    });
-    return list;
-}
-
-type FilterProps = {
-    tag?: string[];
-    class_name?: string;
-    attr?: { name: string; contain: string };
-};
-
-export function findPrev(
-    item: CheerioElement,
-    filter?: FilterProps,
-): CheerioElement {
-    let prev: CheerioElement = item.prev;
-
-    /** 过滤prev */
-    if (prev.type === 'text' && prev.data === ' ') {
-        return findPrev(prev, filter);
-    }
-    if (filter) {
-        if (filter.tag.indexOf(prev.name) === -1) {
-            return findPrev(prev, filter);
-        }
-    }
-    return prev;
-}
-
-export function findNext(
-    item: CheerioElement,
-    filter?: FilterProps,
-): CheerioElement {
-    let next: CheerioElement = item.next;
-    if (!next) {
-        return;
-    }
-
-    /** 过滤prev */
-    if (next.type === 'text' && next.data === ' ') {
-        return findNext(next, filter);
-    }
-
-    if (filter) {
-        if (filter.tag && filter.tag.indexOf(next.name) === -1) {
-            return findNext(next, filter);
-        }
-
-        if (filter.class_name) {
-            const class_str = next.attribs.class;
-            const class_arr = class_str?.split(' ');
-            if (!class_arr || class_arr.indexOf(filter.class_name) === -1) {
-                return findNext(next, filter);
-            }
-        }
-
-        if (filter.attr) {
-            const { name, contain } = filter.attr;
-            const attr = next.attribs[name];
-            if (!attr && attr.indexOf(contain) === -1) {
-                return findNext(next, filter);
-            }
-        }
-    }
-    return next;
-}
+import { queryNext } from './query';
 
 /** 寻找下一级属性的类型 */
 export function findNextSubObj(
@@ -88,7 +9,7 @@ export function findNextSubObj(
     item: CheerioElement,
     $: CheerioStatic,
 ): Partial<ApiObj> {
-    const next_p = findNext(item, { tag: ['p', 'h4'] });
+    const next_p = queryNext(item, { tag: ['p', 'h4'] });
     if (!next_p) {
         return;
     }
@@ -111,7 +32,7 @@ export function findNextSubFun(
     item: CheerioElement,
     $: CheerioStatic,
 ): Partial<ApiFun> {
-    const next_p = findNext(item, {
+    const next_p = queryNext(item, {
         tag: ['p', 'h4', 'h5'],
     });
     if (!next_p) {
@@ -123,12 +44,12 @@ export function findNextSubFun(
     }
     let params = [] as ApiBase[];
     let return_type = {} as ApiBase;
-    const next_params_ele = findNext(next_p, {
+    const next_params_ele = queryNext(next_p, {
         tag: ['p', 'h4', 'h5'],
         attr: { name: 'id', contain: '参数' },
     });
     if (next_params_ele) {
-        const name_dom = findNext(next_params_ele);
+        const name_dom = queryNext(next_params_ele);
         const id = $(name_dom).attr('id');
         const name = id.split('-')[1];
         const props = findNextTable(next_params_ele, $);
@@ -139,7 +60,7 @@ export function findNextSubFun(
             props,
         } as ApiObj);
     }
-    const next_return_ele = findNext(next_p, {
+    const next_return_ele = queryNext(next_p, {
         tag: ['p', 'h4', 'h5'],
         attr: { name: 'id', contain: '返回值' },
     });
@@ -172,7 +93,7 @@ export function findNextInfo(item: CheerioElement, $: CheerioStatic) {
 }
 
 export function findNextTable(item: CheerioElement, $: CheerioStatic) {
-    const $table = findNext(item, { class_name: 'table-wrp' });
+    const $table = queryNext(item, { class_name: 'table-wrp' });
     if (!$table) {
         return;
     }
@@ -214,17 +135,17 @@ export function findNextCommentOrName(
     item: CheerioElement,
     $: CheerioStatic,
 ): Partial<ApiBase> {
-    const $h3 = findNext(item, { tag: ['h3'] });
+    const $h3 = queryNext(item, { tag: ['h3'] });
     const result = {} as Partial<ApiBase>;
     if (!$h3) {
-        const p = findNext(item);
+        const p = queryNext(item);
         if (p && p.tagName === 'p') {
             result.comment = $(p).text();
         }
     } else {
         const name = $($h3).attr('id');
         const type = detectSubType(name);
-        const p = findNext($h3);
+        const p = queryNext($h3);
         if (p && p.tagName === 'p') {
             result.comment = $(p).text();
         }

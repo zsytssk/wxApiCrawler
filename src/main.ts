@@ -1,7 +1,7 @@
 import * as path from 'path';
-import { getUrl } from './net';
+import { getUrl } from './utils/net';
 import { parseHtml, parseItem } from './parseHtml/parseHtml';
-import { queryAllItem } from './parseHtml/findItem';
+import { queryAllItem } from './parseHtml/query';
 import { rm } from './utils/ls/rm';
 
 export const base_url = 'https://developers.weixin.qq.com/minigame/dev/api/';

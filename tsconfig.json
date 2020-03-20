@@ -10,10 +10,11 @@
         "sourceMap": false,
         "watch": true,
         "esModuleInterop": true,
+        "rootDir": ".",
         "baseUrl": "./",
         "paths": {
-            "*": ["node_modules/*", "libs/*", "src/*"]
+            "*": ["node_modules/*", "src/*", "test/*"]
         }
     },
-    "include": ["./src", "./libs"]
+    "include": ["src", "test"]
 }

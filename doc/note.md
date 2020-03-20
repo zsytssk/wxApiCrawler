@@ -1,3 +1,7 @@
+-   @ques 我的 FindItem parseNext。。。 无法表达正确的页面关系
+
+    -   我能一行一行的的去处理吗
+
 -   @todo onShow 两层参数 怎么处理
 
 -   @bug 手机上无法接收再来一局 电脑可以

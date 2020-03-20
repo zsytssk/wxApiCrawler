@@ -14,6 +14,17 @@
             "env": {
                 "TS_NODE_FILES": true
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "run",
+            "runtimeArgs": ["-r", "ts-node/register"],
+            "args": ["${workspaceRoot}\\test\\test.ts"],
+            "sourceMaps": true,
+            "env": {
+                "TS_NODE_FILES": true
+            }
         }
     ]
 }
