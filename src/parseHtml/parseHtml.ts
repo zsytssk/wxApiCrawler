@@ -1,11 +1,10 @@
 import * as cheerio from 'cheerio';
 import { ApiMap } from '../api';
 import { write } from '../utils/ls/write';
-import { stringify } from '../utils/stringify';
-import { queryPrev, queryAllItem } from './query';
-import { matchTable } from './matchTable';
-import { parseSubPage } from './parseSubPage';
 import { getUrl } from '../utils/net';
+import { stringify } from '../utils/stringify';
+import { parseSubPage } from './parseSubPage';
+import { parseTable } from './parseTable';
 
 export const api_map = {} as ApiMap;
 export async function parseUrl(url: string) {
@@ -24,14 +23,10 @@ export function parseHtml(str: string) {
     return $;
 }
 
-export async function parseItem(item: CheerioElement, $: CheerioStatic) {
-    const prev = queryPrev(item, { tag: ['h3', 'h4'] });
-    const name = $(prev).attr('id');
-
-    const list: CheerioElement[] = queryAllItem($, 'tbody tr', item);
-
-    for (const item of list) {
-        const { name, comment, url } = matchTable($('td', item), $);
+export async function parseItem(table: CheerioElement, $: CheerioStatic) {
+    const info_list = parseTable($(table), $);
+    for (const item_info of info_list) {
+        const { url, name } = item_info;
         try {
             const sub_info = await parseSubPage(url);
             await write(

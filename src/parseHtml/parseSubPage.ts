@@ -1,15 +1,13 @@
 import { ApiBase, ApiFun, ApiObj, ApiType } from '../api';
 import { base_url } from '../main';
-import { getUrl } from '../utils/net';
+import { queryAllItem, queryItem, queryNext } from '../utils/query';
 import { genId } from '../utils/utils';
 import { detectSubType, findNextInfo, getFunName } from './findItem';
-import { parseHtml } from './parseHtml';
-import { queryItem, queryAllItem, queryNext } from './query';
+import { parseUrl } from './parseHtml';
 
 export async function parseSubPage(url: string) {
-    const html = await getUrl(base_url + url);
-    const $ = parseHtml(html);
-    const $con = $('#docContent');
+    const $ = await parseUrl(base_url + url);
+    const $con = $('#docContent .content');
     const name = $('h1', $con).text();
     const type = detectSubType(name);
     // console.log(name, type);

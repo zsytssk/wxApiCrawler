@@ -1,6 +1,19 @@
+-   subPageInfo :> name + ...
+-   matchArr :> 等级必须匹配
+
+    -   match_req match_res
+    -   fun:> params + return_type
+    -   obj:> fun | obj :> ...
+    -   prim:> con
+
+-   @todo FunFun 匹配满足两个条件 满足 取消
+
+## 2020-03-20 15:27:57
+
 -   @ques 我的 FindItem parseNext。。。 无法表达正确的页面关系
 
     -   我能一行一行的的去处理吗
+    -   怎么表示 h1, h2 的关系
 
 -   @todo onShow 两层参数 怎么处理
 

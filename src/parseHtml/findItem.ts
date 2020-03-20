@@ -1,7 +1,7 @@
-import { ApiType, ApiBase, ApiFun, ApiObj } from '../api';
-import { matchTable } from './matchTable';
+import { ApiBase, ApiFun, ApiObj, ApiType } from '../api';
+import { queryNext } from '../utils/query';
 import { genId } from '../utils/utils';
-import { queryNext } from './query';
+import { parseTable } from './parseTable';
 
 /** 寻找下一级属性的类型 */
 export function findNextSubObj(
@@ -93,14 +93,14 @@ export function findNextInfo(item: CheerioElement, $: CheerioStatic) {
 }
 
 export function findNextTable(item: CheerioElement, $: CheerioStatic) {
-    const $table = queryNext(item, { class_name: 'table-wrp' });
-    if (!$table) {
+    const table = queryNext(item, { class_name: 'table-wrp' });
+    if (!table) {
         return;
     }
     const result = {} as { [key: string]: ApiBase };
-    const tr_list = $('tbody tr', $table);
-    tr_list.each((index, tr) => {
-        const { name, comment, type } = matchTable($('td', tr), $);
+    const info_list = parseTable($(table), $);
+    for (const item_info of info_list) {
+        const { name, comment, type } = item_info;
         result[name] = {
             name,
             comment,
@@ -108,7 +108,7 @@ export function findNextTable(item: CheerioElement, $: CheerioStatic) {
         };
 
         if (type.toLowerCase() === ApiType.Obj) {
-            const new_api = findNextSubObj(name, $table, $) as ApiBase;
+            const new_api = findNextSubObj(name, table, $) as ApiBase;
             if (new_api) {
                 result[name] = {
                     comment,
@@ -117,7 +117,7 @@ export function findNextTable(item: CheerioElement, $: CheerioStatic) {
             }
         }
         if (type.toLowerCase() === ApiType.Fun) {
-            const new_api = findNextSubFun(name, $table, $) as ApiFun;
+            const new_api = findNextSubFun(name, table, $) as ApiFun;
             if (new_api) {
                 result[name] = {
                     comment,
@@ -125,7 +125,7 @@ export function findNextTable(item: CheerioElement, $: CheerioStatic) {
                 };
             }
         }
-    });
+    }
 
     return result;
 }
