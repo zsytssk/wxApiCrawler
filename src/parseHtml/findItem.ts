@@ -159,6 +159,7 @@ export function findNextCommentOrName(
 const reg_fun1 = /[^\(]+\([^\)]*\)/;
 const reg_fun2 = /function/;
 const reg_fun_name = /([^\s\.]+)\([^\(]*\)/;
+const reg_object = /Object\s(\w+)/;
 export function detectSubType(test_str: string): ApiType {
     if (reg_fun1.test(test_str)) {
         return ApiType.Fun;
@@ -166,8 +167,14 @@ export function detectSubType(test_str: string): ApiType {
     if (reg_fun2.test(test_str)) {
         return ApiType.Fun;
     }
-    return ApiType.Obj;
+    if (reg_object.test(test_str)) {
+        return ApiType.Obj;
+    }
+    return ApiType.Str;
 }
 export function getFunName(test_str: string): string {
     return reg_fun_name.exec(test_str)[1] as string;
+}
+export function getObjectName(test_str: string): string {
+    return reg_object.exec(test_str)[1] as string;
 }

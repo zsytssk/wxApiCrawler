@@ -1,3 +1,10 @@
+```ts
+if (level >= match_level || !match_sub_arr.length) {
+    outMatch(own_item);
+    return false;
+}
+```
+
 -   subPageInfo :> name + ...
 -   matchArr :> 等级必须匹配
 

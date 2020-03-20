@@ -2,8 +2,8 @@ import { base_url } from '../src/main';
 import { parseUrl } from '../src/parseHtml/parseHtml';
 import { parseTable, TableInfo } from '../src/parseHtml/parseTable';
 import { isEmpty } from '../src/utils/query';
-import { putMatch, runMatch, extraMatchResult } from './match';
-import { detectSubType, getFunName } from '../src/parseHtml/findItem';
+import { putMatch, runMatch, extraMatchResult, detectType } from './match';
+import { getFunName } from '../src/parseHtml/findItem';
 import { ApiType } from '../src/api';
 
 async function main() {
@@ -50,7 +50,7 @@ async function parseSubPage(url: string) {
         }
         const { type, con, level } = info;
         if (type !== SubChildRawType.Table) {
-            console.log(type, con, level);
+            // console.log(type, con, level);
         }
         const is_put_match = detectPutMatch(info);
         if (!is_put_match) {
@@ -105,11 +105,7 @@ function parseSubChildRawInfo(
 function detectPutMatch(item: SubChildRawInfo) {
     const { con, level } = item;
     if (level === 1) {
-        const type = detectSubType(con as string);
-        let name = con as string;
-        if (type === ApiType.Fun) {
-            name = getFunName(name);
-        }
+        const { type, name } = detectType(con as string);
         putMatch(name, {
             level,
             type,
