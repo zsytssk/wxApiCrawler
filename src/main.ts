@@ -13,7 +13,7 @@ async function main() {
     const list = queryAllItem($, '#docContent .table-wrp');
     await rm(path.resolve(__dirname, '../dist/'));
     for (const item of list) {
-        if (item === list[0]) {
+        if (item === list[1]) {
             await parseItem(item, $);
         }
     }
