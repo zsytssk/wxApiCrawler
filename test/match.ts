@@ -83,7 +83,7 @@ function createMatchFunFun(own_item: MatchItem): MatchItem['match_fun'] {
             const match_sub_fn = match_sub_arr[i];
             const is_match = match_sub_fn(raw_item);
             if (is_match) {
-                match_sub_arr.splice(i, 1);
+                // match_sub_arr.splice(i, 1);
                 return true;
             }
         }
