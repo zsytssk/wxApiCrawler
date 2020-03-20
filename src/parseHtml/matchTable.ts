@@ -6,20 +6,31 @@ export function matchTable(item: Cheerio, $: CheerioStatic) {
         const comment = parseTbOther(item[1], $);
         return {
             name,
-            url,
             comment,
+            url,
         };
     }
-    if (item.length > 2) {
+    if (item.length > 2 && item.length < 5) {
         const { name, url } = parseTbName(item[0], $);
         const type = parseTbOther(item[1], $) as ApiType;
         const comment = parseTbOther(item[2], $);
 
         return {
             name,
-            url,
-            comment,
             type,
+            comment,
+            url,
+        };
+    } else if (item.length === 5) {
+        const { name, url } = parseTbName(item[0], $);
+        const type = parseTbOther(item[1], $) as ApiType;
+        const comment = parseTbOther(item[4], $);
+
+        return {
+            name,
+            type,
+            comment,
+            url,
         };
     }
 }

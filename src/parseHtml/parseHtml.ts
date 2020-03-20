@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { ApiMap } from '../api';
 import { write } from '../utils/ls/write';
 import { stringify } from '../utils/stringify';
-import { findPrev, queryItem } from './findItem';
+import { findPrev, queryAllItem } from './findItem';
 import { matchTable } from './matchTable';
 import { parseSubPage } from './parseSubPage';
 
@@ -19,7 +19,7 @@ export async function parseItem(item: CheerioElement, $: CheerioStatic) {
     const prev = findPrev(item, { tag: ['h3', 'h4'] });
     const name = $(prev).attr('id');
 
-    const list: CheerioElement[] = queryItem($, 'tbody tr', item);
+    const list: CheerioElement[] = queryAllItem($, 'tbody tr', item);
 
     for (const item of list) {
         const { name, comment, url } = matchTable($('td', item), $);
@@ -30,7 +30,7 @@ export async function parseItem(item: CheerioElement, $: CheerioStatic) {
                 stringify(sub_info, 10),
             );
         } catch (err) {
-            console.log(name);
+            console.error(`parseSubPage:>error:>`, name);
         }
     }
 }

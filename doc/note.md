@@ -1,6 +1,17 @@
 -   @todo 先做一个简单的 wx.getUpdateManager
 
+-   @bug 手机上无法接收再来一局 电脑可以
+    -   可能是哪里出了问题
+    -   有一个时候出现了两个邀请再来一局的弹框（可能和这有关...）
+
 ## 2020-03-19 13:42:24
+
+-   @ques 如何将其他的关闭
+
+-   @bug
+
+    -   onUpdateReady res
+    -   addService:>Array.<Object>
 
 -   @err 有问题的
 

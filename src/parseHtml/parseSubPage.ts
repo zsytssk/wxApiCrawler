@@ -2,7 +2,16 @@ import { ApiBase, ApiFun, ApiObj, ApiType } from '../api';
 import { base_url } from '../main';
 import { getUrl } from '../net';
 import { genId } from '../utils/utils';
-import { findNext, findNextTable } from './findItem';
+import {
+    findNext,
+    findNextTable,
+    findNextCommentOrName,
+    queryItem,
+    queryAllItem,
+    findNextInfo,
+    detectSubType,
+    getFunName,
+} from './findItem';
 import { parseHtml } from './parseHtml';
 
 export async function parseSubPage(url: string) {
@@ -18,52 +27,48 @@ export async function parseSubPage(url: string) {
 }
 
 /** 解析函数的类型 */
-function parseFun($: CheerioStatic, name: string) {
-    const $con = $('#docContent');
+function parseFun($: CheerioStatic, name: string): Partial<ApiBase> {
+    const con_dom = queryItem($, '#docContent');
     const fun_name = getFunName(name);
+    const h1 = queryItem($, 'h1', con_dom);
     const result = { name: fun_name, type: ApiType.Fun } as ApiFun;
-    const section_list = $('h2', $con);
+    const section_list = queryAllItem($, 'h2', con_dom);
+    const comment_dom = findNext(h1);
+    if (comment_dom) {
+        const comment = $(comment_dom).text();
+        result.comment = comment;
+    }
 
-    section_list.each((index, item) => {
+    for (const item of section_list) {
         const h2_text = $(item).attr('id');
         if (h2_text === '返回值') {
-            const return_type = {
+            let return_type = {
                 name: 'return_type',
                 comment: '',
                 type: ApiType.Obj,
             } as ApiBase;
-
-            (return_type as ApiObj).props = findNextTable(item, $);
+            const return_info = findNextInfo(item, $);
+            return_type = {
+                ...return_type,
+                ...return_info,
+            };
             result.return = return_type;
-        }
-        if (h2_text === '参数') {
+        } else if (h2_text === '参数') {
             const params = [];
             const name_dom = findNext(item);
             const id = $(name_dom).attr('id');
             const name = id.split('-')[1];
-            const props = findNextTable(item, $);
+            const return_info = findNextInfo(item, $);
             params.push({
                 id: genId(),
                 name,
                 comment: '',
                 type: ApiType.Obj,
-                props,
+                ...return_info,
             } as ApiObj);
             result.params = params;
         }
-    });
+    }
 
     return result;
-}
-
-const reg_fun = /[^\(]+\([^\)]*\)/;
-const reg_fun_name = /([^\s\.]+)\([^\(]*\)/;
-export function detectSubType(test_str: string): ApiType {
-    if (reg_fun.test(test_str)) {
-        return ApiType.Fun;
-    }
-    return ApiType.Obj;
-}
-export function getFunName(test_str: string): string {
-    return reg_fun_name.exec(test_str)[1] as string;
 }

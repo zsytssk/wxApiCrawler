@@ -6,6 +6,12 @@ export function queryItem(
     $: CheerioStatic,
     ...params: [string, CheerioElement?]
 ) {
+    return $(...params)[0];
+}
+export function queryAllItem(
+    $: CheerioStatic,
+    ...params: [string, CheerioElement?]
+) {
     const $con = $(...params);
     const list: CheerioElement[] = [];
     $con.each((index, item) => {
@@ -81,7 +87,7 @@ export function findNextSubObj(
     name: string,
     item: CheerioElement,
     $: CheerioStatic,
-): ApiObj {
+): Partial<ApiObj> {
     const next_p = findNext(item, { tag: ['p', 'h4'] });
     if (!next_p) {
         return;
@@ -95,7 +101,6 @@ export function findNextSubObj(
     return {
         id: genId(),
         name,
-        comment: '',
         type: ApiType.Obj,
         props,
     };
@@ -105,7 +110,7 @@ export function findNextSubFun(
     name: string,
     item: CheerioElement,
     $: CheerioStatic,
-): ApiFun {
+): Partial<ApiFun> {
     const next_p = findNext(item, {
         tag: ['p', 'h4', 'h5'],
     });
@@ -130,7 +135,6 @@ export function findNextSubFun(
         params.push({
             id: genId(),
             name,
-            comment: '',
             type: ApiType.Obj,
             props,
         } as ApiObj);
@@ -143,19 +147,27 @@ export function findNextSubFun(
         const props = findNextTable(next_params_ele, $);
         return_type = {
             id: genId(),
-            comment: '',
             type: ApiType.Obj,
             props,
         } as ApiObj;
     }
 
     return {
+        id: genId(),
         name,
         type: ApiType.Fun,
         params,
         return: return_type,
-        comment: '',
-        id: genId(),
+    };
+}
+
+export function findNextInfo(item: CheerioElement, $: CheerioStatic) {
+    const info = findNextCommentOrName(item, $);
+    const props = findNextTable(item, $);
+
+    return {
+        ...info,
+        props,
     };
 }
 
@@ -175,20 +187,20 @@ export function findNextTable(item: CheerioElement, $: CheerioStatic) {
         };
 
         if (type.toLowerCase() === ApiType.Obj) {
-            const new_api = findNextSubObj(name, $table, $);
+            const new_api = findNextSubObj(name, $table, $) as ApiBase;
             if (new_api) {
                 result[name] = {
-                    ...new_api,
                     comment,
+                    ...new_api,
                 };
             }
         }
         if (type.toLowerCase() === ApiType.Fun) {
-            const new_api = findNextSubFun(name, $table, $);
+            const new_api = findNextSubFun(name, $table, $) as ApiFun;
             if (new_api) {
                 result[name] = {
-                    ...new_api,
                     comment,
+                    ...new_api,
                 };
             }
         }
@@ -197,7 +209,49 @@ export function findNextTable(item: CheerioElement, $: CheerioStatic) {
     return result;
 }
 
+/** 寻找下一个name不是table信息 */
+export function findNextCommentOrName(
+    item: CheerioElement,
+    $: CheerioStatic,
+): Partial<ApiBase> {
+    const $h3 = findNext(item, { tag: ['h3'] });
+    const result = {} as Partial<ApiBase>;
+    if (!$h3) {
+        const p = findNext(item);
+        if (p && p.tagName === 'p') {
+            result.comment = $(p).text();
+        }
+    } else {
+        const name = $($h3).attr('id');
+        const type = detectSubType(name);
+        const p = findNext($h3);
+        if (p && p.tagName === 'p') {
+            result.comment = $(p).text();
+        }
+        result.name = name;
+        result.type = type;
+    }
+
+    return result;
+}
+
 // tag.div
 function matchItem(item: CheerioElement, selector: string): boolean {
     return false;
+}
+
+const reg_fun1 = /[^\(]+\([^\)]*\)/;
+const reg_fun2 = /function/;
+const reg_fun_name = /([^\s\.]+)\([^\(]*\)/;
+export function detectSubType(test_str: string): ApiType {
+    if (reg_fun1.test(test_str)) {
+        return ApiType.Fun;
+    }
+    if (reg_fun2.test(test_str)) {
+        return ApiType.Fun;
+    }
+    return ApiType.Obj;
+}
+export function getFunName(test_str: string): string {
+    return reg_fun_name.exec(test_str)[1] as string;
 }
