@@ -156,11 +156,6 @@ export function findNextCommentOrName(
     return result;
 }
 
-// tag.div
-function matchItem(item: CheerioElement, selector: string): boolean {
-    return false;
-}
-
 const reg_fun1 = /[^\(]+\([^\)]*\)/;
 const reg_fun2 = /function/;
 const reg_fun_name = /([^\s\.]+)\([^\(]*\)/;

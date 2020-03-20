@@ -18,7 +18,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "run",
+            "name": "test",
             "runtimeArgs": ["-r", "ts-node/register"],
             "args": ["${workspaceRoot}\\test\\test.ts"],
             "sourceMaps": true,
