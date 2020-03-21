@@ -1,29 +1,39 @@
-import { ApiType, ApiBase, ApiObj, ApiFun } from '../src/api';
-import { SubChildRawInfo, SubChildRawType } from './test';
-import { TableInfo } from 'parseHtml/parseTable';
-import { stringify } from '../src/utils/stringify';
+import { TableInfo } from './parseTable';
+import { ApiBase, ApiFun, ApiObj, ApiType } from '../api';
+import { SubChildRawInfo, SubChildRawType } from './parseUtils';
 
-const match_arr: MatchItem[] = [];
+let match_arr: MatchItem[] = [];
 
 type MatchRawItem = {
     type: ApiType;
     level: number;
+    trigger: boolean;
 };
+type MatchFun = (match_info: SubChildRawInfo) => boolean;
 type MatchItem = MatchRawItem & {
     item: ApiBase;
-    match_sub_arr?: Array<(match_info: SubChildRawInfo) => boolean>;
-    match_fun: (match_info: SubChildRawInfo) => boolean;
+    trigger: boolean;
+    trigger_fun: MatchFun;
+    match_sub_arr?: Array<MatchFun>;
+    match_fun: MatchFun;
 };
 export function runMatch(item: SubChildRawInfo) {
     for (let len = match_arr.length, i = len - 1; i >= 0; i--) {
-        const is_match = match_arr[i].match_fun(item);
+        const { match_fun, trigger, trigger_fun } = match_arr[i];
+
+        /** 跳过没有打开的 */
+        if (!trigger && !trigger_fun(item)) {
+            continue;
+        }
+        const is_match = match_fun(item);
         if (is_match) {
             break;
         }
     }
 }
+
 export function putMatch(name: string, raw_item: MatchRawItem, item?: ApiBase) {
-    const { type, level } = raw_item;
+    const { type, level, trigger } = raw_item;
     if (!item) {
         item = {
             name,
@@ -35,12 +45,15 @@ export function putMatch(name: string, raw_item: MatchRawItem, item?: ApiBase) {
         type,
         level,
         item,
+        trigger,
     } as MatchItem;
 
     const match_sub_comment = createMatchSubCommentFun(item);
     match_sub_arr.push(match_sub_comment);
     match_item.match_sub_arr = match_sub_arr;
-
+    if (!trigger) {
+        match_item.trigger_fun = createTriggerFun(match_item);
+    }
     match_item.match_fun = createMatchFun(match_item);
     match_arr.push(match_item);
 
@@ -48,8 +61,9 @@ export function putMatch(name: string, raw_item: MatchRawItem, item?: ApiBase) {
 }
 /** 抽离 match 的信息 */
 export function extraMatchResult() {
-    console.log(stringify(match_arr, 10));
-    return match_arr[0].item;
+    const result = match_arr[0].item;
+    match_arr = [];
+    return result;
 }
 
 function createMatchFun(own_item: MatchItem): MatchItem['match_fun'] {
@@ -62,6 +76,24 @@ function createMatchFun(own_item: MatchItem): MatchItem['match_fun'] {
     } else {
         return createMatchPrimeFun(own_item);
     }
+}
+function createTriggerFun(own_item: MatchItem): MatchItem['match_fun'] {
+    const { level, item } = own_item;
+
+    return (raw_item: SubChildRawInfo) => {
+        const { level: match_level, con, type } = raw_item;
+        if (level >= match_level) {
+            outMatch(own_item);
+            return false;
+        }
+        if (typeof con !== 'string') {
+            return false;
+        }
+        if (con.indexOf(item.name) !== -1) {
+            own_item.trigger = true;
+            return true;
+        }
+    };
 }
 
 function createMatchFunFun(own_item: MatchItem): MatchItem['match_fun'] {
@@ -79,6 +111,7 @@ function createMatchFunFun(own_item: MatchItem): MatchItem['match_fun'] {
                 match_sub_arr.push(createMatchSubReturnFun(item));
                 return true;
             } else if (txt_con.indexOf('参数') !== -1) {
+                item.params = [];
                 match_sub_arr.push(createMatchSubParamsFun(item));
                 return true;
             }
@@ -125,10 +158,14 @@ function createMatchObjFun(own_item: MatchItem): MatchItem['match_fun'] {
                     type,
                 };
                 if (type === ApiType.Fun || type === ApiType.Obj) {
-                    putMatch(name, { type, level: level + 1 }, new_item);
+                    putMatch(
+                        name,
+                        { type, level: level + 0.5, trigger: false },
+                        new_item,
+                    );
                 }
 
-                item.props[con_item.name] = new_item;
+                item.props[name] = new_item;
             }
         }
         return true;
@@ -184,8 +221,12 @@ function createMatchSubParamsFun(item: ApiFun): MatchItem['match_fun'] {
                 name,
                 type,
             } as ApiBase;
-            item.params = [param_item];
-            putMatch(name, { type, level: match_level }, param_item);
+            item.params.push(param_item);
+            putMatch(
+                name,
+                { type, level: match_level, trigger: true },
+                param_item,
+            );
             return true;
         }
         return false;
@@ -207,7 +248,11 @@ function createMatchSubReturnFun(item: ApiFun): MatchItem['match_fun'] {
                 type,
             } as ApiBase;
             item.return = param_item;
-            putMatch(name, { type, level: match_level });
+            putMatch(
+                name,
+                { type, level: match_level, trigger: true },
+                param_item,
+            );
             return true;
         }
         return false;
@@ -229,7 +274,7 @@ const reg_fun1 = /[^\(]+\([^\)]*\)/;
 const reg_fun2 = /function/;
 const reg_fun2_name = /function[^\w]+(\w+)/;
 const reg_fun_name = /([^\s\.]+)\([^\(]*\)/;
-const reg_object = /Object\s(\w+)/;
+const reg_object = /Object[^\w](\w+)/;
 export function detectType(
     test_str: string,
 ): {
@@ -244,7 +289,6 @@ export function detectType(
         };
     }
     if (reg_fun2.test(test_str)) {
-        console.log(test_str);
         const name = reg_fun2_name.exec(test_str)[1];
         return {
             type: ApiType.Fun,

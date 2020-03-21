@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "ts-node --files ./src/main.ts",
+        "start": "ts-node -r tsconfig-paths/register --files ./src/main.ts parseHtml",
         "test": "ts-node --files ./test/test.ts"
     },
     "keywords": [],
@@ -14,6 +14,7 @@
         "@types/node": "^13.9.2",
         "cheerio": "^1.0.0-rc.3",
         "ts-node": "^8.7.0",
+        "tsconfig-paths": "^3.9.0",
         "typescript": "^3.8.3"
     },
     "devDependencies": {

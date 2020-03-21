@@ -1,3 +1,32 @@
+-   @test Touch
+
+    -   wx.login | wx.getSystemInfoSync
+
+## 2020-03-21 10:19:09
+
+-   @todo 将原来的 parseHtml 删除 test -> src 中
+
+-   @todo Array.Object 怎么处理
+
+-   @todo 升级 script
+
+-   @todo `#` 这个怎么清理
+
+-   @todo 防止代码自动运行...
+
+### finish
+
+    -   success 下的值对应的值怎么处理
+
+    -   怎么给他添加回调函数
+        -   触发 匹配
+
+-   @ques 原来的参数为什么没有触发 fail complete ...
+
+-   @ques 删除示例代码 `# 示例代码`
+
+## 2020-03-20 22:48:54
+
 -   @ques 所有的一切就像一个黑箱 没办法理清楚。。
 
 {}

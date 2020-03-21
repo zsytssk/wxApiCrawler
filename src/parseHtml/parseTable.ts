@@ -29,7 +29,7 @@ function parseTd(td: Cheerio, $: CheerioStatic) {
     }
     if (td.length > 2 && td.length < 5) {
         const { name, url } = parseTbName(td[0], $);
-        const type = parseTbOther(td[1], $) as ApiType;
+        const type = parseTbOther(td[1], $).toLowerCase() as ApiType;
         const comment = parseTbOther(td[2], $);
 
         return {
@@ -40,7 +40,18 @@ function parseTd(td: Cheerio, $: CheerioStatic) {
         };
     } else if (td.length === 5) {
         const { name, url } = parseTbName(td[0], $);
-        const type = parseTbOther(td[1], $) as ApiType;
+        const type = parseTbOther(td[1], $).toLowerCase() as ApiType;
+        const comment = parseTbOther(td[4], $);
+
+        return {
+            name,
+            type,
+            comment,
+            url,
+        };
+    } else if (td.length === 6) {
+        const { name, url } = parseTbName(td[0], $);
+        const type = parseTbOther(td[1], $).toLowerCase() as ApiType;
         const comment = parseTbOther(td[4], $);
 
         return {
