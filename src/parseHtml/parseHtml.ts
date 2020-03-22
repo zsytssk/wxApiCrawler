@@ -30,7 +30,7 @@ export async function parseHtml(base_url: string, listener: Listener) {
     });
 
     for (const [index, item] of child_list.entries()) {
-        if (index > 2) {
+        if (index >= 4) {
             continue;
         }
         const info_list = parseTable($(item), $);

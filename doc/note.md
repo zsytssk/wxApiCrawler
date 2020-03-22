@@ -1,13 +1,16 @@
+-   @bug 先将所有的 namespace 组织起来
+
 ## 2020-03-22 10:38:35
+
+-   @bug UpdateManager.onUpdateReady 丢了
 
 -   @bug
 
+    -   wx.Onshow 存在多次
     -   GetSystemInfoSyncResSafeArea 存在多个
     -   `onCheckForUpdate: (callback: UpdateManagerOnCheckForUpdateCallback)=> void;`
 
 -   @todo 注释
-
--   @bug wx.Onshow 存在多次
 
 -   @todo 先做一个 wx.d.ts
 

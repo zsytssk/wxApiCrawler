@@ -1,19 +1,34 @@
 import { ApiBase, ApiObj, ApiType, ApiFun, isPrime, ApiNameSpace } from 'api';
 import upperFirst from 'lodash/fp/upperFirst';
 import { genTab } from 'utils/utils';
-import { addWriteStr } from './genApi';
+import { addWriteStr } from './writeApi';
 
+type SubType = 'normal' | 'prop';
+const type_tpl = `type $1= $2;`;
 export function genType(
     top_name: string,
     api: ApiBase,
     sub_type: SubType = 'prop',
+    extra = false,
 ) {
     const { name: api_name, type } = api;
     if (isPrime(type)) {
         return type;
     }
     if (type === ApiType.Fun) {
-        return genFun(top_name, api as ApiFun, sub_type);
+        const fun_str = genFun(top_name, api as ApiFun, sub_type);
+        if (!extra) {
+            return fun_str;
+        } else if (fun_str.length <= 30) {
+            return fun_str;
+        } else {
+            const type_name = upperFirstName(top_name, api_name);
+            const type_str = type_tpl
+                .replace('$1', type_name)
+                .replace('$2', fun_str);
+            addWriteStr(type_str);
+            return type_name;
+        }
     }
     if (type === ApiType.Obj) {
         const { props } = api as ApiObj;
@@ -27,7 +42,6 @@ export function genType(
     }
 }
 
-type SubType = 'normal' | 'prop';
 const ns_tpl = `declare namespace $1 {$2}`;
 const ns_prop_tpl = `export $1`;
 export function genNamespace(ns: ApiNameSpace) {
@@ -73,7 +87,7 @@ function genInterface(top_name: string, api: ApiObj) {
     return result;
 }
 
-const fun_prop_tpl = `($1)=> $2`;
+const fun_prop_tpl = `($1) => $2`;
 const fun_normal_tpl = `function $1($2): $3;`;
 
 export function genFun(
@@ -83,7 +97,10 @@ export function genFun(
 ) {
     const { params, return_type, name } = api;
 
-    const fun_name = upperFirstName(top_name, name);
+    let fun_name = name;
+    if (top_name) {
+        fun_name = upperFirstName(top_name, name);
+    }
     const params_str = genFunParams(fun_name, params);
     const return_str = genFunReturn(fun_name, return_type as ApiBase);
     if (type === 'normal') {
@@ -96,18 +113,16 @@ export function genFun(
 }
 
 const param_tpl = `$1: $2`;
+
 export function genFunParams(top_name: string, params: ApiBase[] = []) {
     let params_str = '';
     for (const [index, param] of params.entries()) {
         const { name: sub_name, type } = param;
-        let type_name = type;
+        let type_str = type as string;
         if (!isPrime(type)) {
-            type_name = upperFirstName(top_name, sub_name);
-            genType(top_name, param);
+            type_str = genType(top_name, param, 'prop', true);
         }
-        params_str += param_tpl
-            .replace(`$1`, sub_name)
-            .replace('$2', type_name);
+        params_str += param_tpl.replace(`$1`, sub_name).replace('$2', type_str);
         if (index !== params.length - 1) {
             params_str += ',';
         }
@@ -120,11 +135,10 @@ export function genFunReturn(top_name: string, api?: ApiBase) {
         return 'void';
     }
 
-    const { name: sub_name, type } = api;
+    const { type } = api;
     let type_name = type;
     if (!isPrime(type)) {
-        type_name = upperFirstName(top_name, sub_name);
-        genType(top_name, api);
+        type_name = genType(top_name, api, 'prop', true);
     }
     return type_name;
 }
