@@ -1,8 +1,56 @@
--   @test Touch
+## 2020-03-22 10:38:35
 
-    -   wx.login | wx.getSystemInfoSync
+-   @bug
+
+    -   GetSystemInfoSyncResSafeArea 存在多个
+    -   `onCheckForUpdate: (callback: UpdateManagerOnCheckForUpdateCallback)=> void;`
+
+-   @todo 注释
+
+-   @bug wx.Onshow 存在多次
+
+-   @todo 先做一个 wx.d.ts
+
+    -   怎么写入微信
+
+-   @ques 怎么将 ApiBase 变成引用...
+
+    -   ApiBase 的上下级光系也要修改...
+
+-   @todo 先把第一个写出来 后面慢慢完善
+    -   只是 框架的要改 + 第一实现 作为最高优先级
+
+### finish
+
+-   @ques name 有问题
 
 ## 2020-03-21 10:19:09
+
+-   @ques 如果有 interface 属性一样的怎么处理 如何合并
+
+-   @ques 特殊类型如何处理
+
+    -   return ApiBase[] 怎么处理
+    -   如果返回对象是 Array<T> 如何处理
+    -   object{[key]: object} 也不一定需要做成 interface
+    -   function 基本上不需要 但是 fun :> Object 是需要的
+    -   检测是否需要创建 interface(检测对象的属性个数...)
+
+-   @ques 函数参数的注释怎么写...
+
+-   @ques interface 要放在什么地方才好
+
+    -   putOutInterface ...
+
+-   @note 生成函数 | jsx 的代码可以归总到一起...
+
+-   @play Trojan
+
+-   @ques 如何添加注释
+
+-   @todo Touch
+
+    -   wx.login | wx.getSystemInfoSync
 
 -   @todo 将原来的 parseHtml 删除 test -> src 中
 

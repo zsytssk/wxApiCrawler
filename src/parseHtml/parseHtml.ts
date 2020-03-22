@@ -1,10 +1,9 @@
+import { ApiBase } from 'api';
 import * as path from 'path';
 import { extraMatchResult, runMatch } from '../parseHtml/parseMatch';
 import { parseTable } from '../parseHtml/parseTable';
 import { clear } from '../utils/ls/rm';
-import { write } from '../utils/ls/write';
 import { isEmpty } from '../utils/query';
-import { stringify } from '../utils/stringify';
 import {
     $Url,
     detectPutMatch,
@@ -12,32 +11,41 @@ import {
     parseSubChildRawInfo,
 } from './parseUtils';
 
-export async function parseHtml(base_url: string) {
+type Listener = (item: ApiBase) => Promise<void>;
+export async function parseHtml(base_url: string, listener: Listener) {
     const $ = await $Url(base_url);
     const con = $('#docContent .content')[0];
 
     const dist = path.resolve(__dirname, '../dist');
     await clear(dist);
 
-    for (const item of con.childNodes) {
+    const child_list = con.childNodes.filter(item => {
         if (isEmpty(item)) {
-            continue;
+            return false;
         }
         if (!$(item).is('.table-wrp')) {
+            return false;
+        }
+        return true;
+    });
+
+    for (const [index, item] of child_list.entries()) {
+        if (index > 2) {
             continue;
         }
         const info_list = parseTable($(item), $);
+
         for (const item_info of info_list) {
             const { url, name } = item_info;
 
             /** @test */
-            // if (name !== 'wx.getSystemInfo') {
+            // if (name !== 'UpdateManager.applyUpdate') {
             //     continue;
             // }
             try {
                 const result = await parseSubPage(base_url + url);
-                const file_path = path.resolve(dist, `${result.name}.json`);
-                await write(file_path, stringify(result, 10));
+                result.full_name = name;
+                await listener(result);
             } catch (err) {
                 console.log('\x1b[36m', `[${name}]:>`, '\x1b[0m', err);
             }

@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import { getUrl } from 'utils/net';
 import { detectType, putMatch } from './parseMatch';
 import { parseTable, TableInfo } from './parseTable';
+import { isEmpty } from 'utils/query';
 
 export async function $Url(url: string) {
     const html = await getUrl(url);
@@ -68,9 +69,11 @@ export function detectPutMatch(item: SubChildRawInfo) {
 
     return false;
 }
+const ignore_arr = [`# 示例代码`, '# 注意'];
 export function isIgnore(item: SubChildRawInfo) {
-    const { con, level } = item;
-    if (con === `# 示例代码`) {
+    const { con } = item;
+
+    if (typeof con === 'string' && ignore_arr.indexOf(con as string) !== -1) {
         return true;
     }
 

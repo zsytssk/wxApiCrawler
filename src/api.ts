@@ -19,6 +19,7 @@ export type RefApi = string;
 /** 所有的api基本类型包含的属性 */
 export interface ApiBase {
     name: string;
+    full_name?: string;
     comment: string;
     type: ApiType;
     ref?: RefApi;
@@ -27,13 +28,20 @@ export interface ApiBase {
 export interface ApiFun extends ApiBase {
     id: string;
     params?: ApiBase[];
-    return?: ApiBase | ApiBase[];
+    return_type?: ApiBase | ApiBase[];
     type: ApiType.Fun;
 }
 
 export interface ApiObj extends ApiBase {
     id: string;
     type: ApiType.Obj;
+    props: {
+        [key: string]: ApiBase;
+    };
+}
+export interface ApiNameSpace extends ApiBase {
+    id: string;
+    type: ApiType.Namespace;
     props: {
         [key: string]: ApiBase;
     };
@@ -45,4 +53,15 @@ export interface ApiNameSpace extends ApiBase {
     props: {
         [key: string]: ApiBase;
     };
+}
+
+export function isPrime(type: ApiType) {
+    if (
+        type === ApiType.Fun ||
+        type === ApiType.Obj ||
+        type === ApiType.Namespace
+    ) {
+        return false;
+    }
+    return true;
 }

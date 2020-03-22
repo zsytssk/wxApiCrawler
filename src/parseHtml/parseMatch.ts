@@ -247,7 +247,7 @@ function createMatchSubReturnFun(item: ApiFun): MatchItem['match_fun'] {
                 name,
                 type,
             } as ApiBase;
-            item.return = param_item;
+            item.return_type = param_item;
             putMatch(
                 name,
                 { type, level: match_level, trigger: true },

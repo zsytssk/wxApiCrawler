@@ -8,11 +8,18 @@
             "type": "node",
             "request": "launch",
             "name": "run",
-            "runtimeArgs": ["-r", "ts-node/register"],
-            "args": ["${workspaceRoot}\\src\\main.ts"],
+            "runtimeArgs": [
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "args": ["src/main.ts", "parseHtml"],
+            "cwd": "${workspaceFolder}",
             "sourceMaps": true,
             "env": {
-                "TS_NODE_FILES": true
+                "TS_NODE_PROJECT": "tsconfig.json",
+                "TS_NODE_TRANSPILE_ONLY": "true"
             }
         },
         {
@@ -23,7 +30,8 @@
             "args": ["${workspaceRoot}\\test\\test.ts"],
             "sourceMaps": true,
             "env": {
-                "TS_NODE_FILES": true
+                "TS_NODE_PROJECT": "tsconfig.json",
+                "TS_NODE_TRANSPILE_ONLY": "true"
             }
         }
     ]
