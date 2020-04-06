@@ -1,4 +1,16 @@
+-   @todo 注释...
+
+    -   方法得注释...
+    -   genNamespace
+
+-   genInterface
+
+## 2020-04-06 10:21:49
+
 -   @bug 先将所有的 namespace 组织起来
+-   @todo getUpdateManager
+
+<!-- - @bug ts.SyntaxKind.AsyncKeyword -->
 
 ## 2020-03-22 10:38:35
 
@@ -21,7 +33,14 @@
     -   ApiBase 的上下级光系也要修改...
 
 -   @todo 先把第一个写出来 后面慢慢完善
+
     -   只是 框架的要改 + 第一实现 作为最高优先级
+
+-   @todo arrow-parens tslint
+
+*   @ques 有相同得对象得熟悉 怎么处理 GetSystemInfoSyncRes GetSystemInfoSyncResSafeArea y
+
+-   @play omen dota2 闪退...
 
 ### finish
 

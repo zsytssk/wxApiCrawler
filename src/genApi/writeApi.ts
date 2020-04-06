@@ -8,6 +8,7 @@ export async function writeApiIn(api: ApiBase) {
         str = genNamespace(api as ApiNameSpace);
         addWriteStr(str);
     } else if (api.type === ApiType.Obj) {
+        console.log(api);
         genType('', api);
     }
 }

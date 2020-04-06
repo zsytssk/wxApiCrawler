@@ -2,9 +2,10 @@ import { ApiBase, ApiObj, ApiType, ApiFun, isPrime, ApiNameSpace } from 'api';
 import upperFirst from 'lodash/fp/upperFirst';
 import { genTab } from 'utils/utils';
 import { addWriteStr } from './writeApi';
+import { genComment } from './genComment';
 
-type SubType = 'normal' | 'prop';
-const type_tpl = `type $1= $2;`;
+type SubType = 'normal' | 'clean' | 'prop';
+const type_tpl = `type $1 = $2;`;
 export function genType(
     top_name: string,
     api: ApiBase,
@@ -23,9 +24,14 @@ export function genType(
             return fun_str;
         } else {
             const type_name = upperFirstName(top_name, api_name);
-            const type_str = type_tpl
+            let type_str = type_tpl
                 .replace('$1', type_name)
                 .replace('$2', fun_str);
+
+            const comment = genComment(api);
+            if (comment) {
+                type_str = comment + '\n' + type_str;
+            }
             addWriteStr(type_str);
             return type_name;
         }
@@ -52,17 +58,25 @@ export function genNamespace(ns: ApiNameSpace) {
         if (!props.hasOwnProperty(key)) {
             continue;
         }
+        const comment_str = genComment(item as ApiFun, 1);
+        inner += genTab(1, true);
+        inner += comment_str;
         const type_str = genType('', item as ApiFun, 'normal');
         inner += genTab(1, true);
         inner += ns_prop_tpl.replace(`$1`, type_str);
     }
     inner += '\n';
     result = result.replace('$2', inner);
+    const comment = genComment(ns);
+    if (comment) {
+        result = comment + result;
+    }
     return result;
 }
 
 const int_tpl = `interface $1 {$2}`;
 const props_prop_tpl = `$1: $2;`;
+const props_fn_tpl = `$1$2;`;
 function genInterface(top_name: string, api: ApiObj) {
     const { props, name } = api;
 
@@ -74,20 +88,27 @@ function genInterface(top_name: string, api: ApiObj) {
 
     let inner = '';
     for (const [, item] of Object.entries(props)) {
-        const { name: sub_name } = item;
+        const { name: sub_name, type } = item;
+        let props_tpl = props_prop_tpl;
+        if (type === ApiType.Fun) {
+            props_tpl = props_fn_tpl;
+        }
         const type_name = genType(interface_name, item);
 
         inner += genTab(1, true);
-        inner += props_prop_tpl
-            .replace('$1', sub_name)
-            .replace('$2', type_name);
+        const comment_str = genComment(item, 1);
+        inner += comment_str;
+
+        inner += genTab(1, true);
+        inner += props_tpl.replace('$1', sub_name).replace('$2', type_name);
     }
     inner += '\n';
     result = result.replace('$2', inner);
     return result;
 }
 
-const fun_prop_tpl = `($1) => $2`;
+const fun_clean_tpl = `($1)=> $2`;
+const fun_prop_tpl = `($1): $2`;
 const fun_normal_tpl = `function $1($2): $3;`;
 
 export function genFun(
@@ -103,13 +124,23 @@ export function genFun(
     }
     const params_str = genFunParams(fun_name, params);
     const return_str = genFunReturn(fun_name, return_type as ApiBase);
+    let result = '';
     if (type === 'normal') {
-        return fun_normal_tpl
+        result = fun_normal_tpl
             .replace('$1', fun_name)
             .replace('$2', params_str)
             .replace('$3', return_str);
+    } else if (type === 'prop') {
+        result = fun_prop_tpl
+            .replace('$1', params_str)
+            .replace('$2', return_str);
+    } else {
+        result = fun_clean_tpl
+            .replace('$1', params_str)
+            .replace('$2', return_str);
     }
-    return fun_prop_tpl.replace('$1', params_str).replace('$2', return_str);
+
+    return result;
 }
 
 const param_tpl = `$1: $2`;
@@ -120,7 +151,7 @@ export function genFunParams(top_name: string, params: ApiBase[] = []) {
         const { name: sub_name, type } = param;
         let type_str = type as string;
         if (!isPrime(type)) {
-            type_str = genType(top_name, param, 'prop', true);
+            type_str = genType(top_name, param, 'clean', true);
         }
         params_str += param_tpl.replace(`$1`, sub_name).replace('$2', type_str);
         if (index !== params.length - 1) {
@@ -135,10 +166,10 @@ export function genFunReturn(top_name: string, api?: ApiBase) {
         return 'void';
     }
 
-    const { type } = api;
-    let type_name = type;
+    const { type, ref_name } = api;
+    let type_name = ref_name || type;
     if (!isPrime(type)) {
-        type_name = genType(top_name, api, 'prop', true);
+        type_name = genType(top_name, api, 'clean', true);
     }
     return type_name;
 }

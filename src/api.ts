@@ -19,9 +19,10 @@ export type RefApi = string;
 /** 所有的api基本类型包含的属性 */
 export interface ApiBase {
     name: string;
-    full_name?: string;
     comment: string;
     type: ApiType;
+    full_name?: string;
+    ref_name?: string;
     ref?: RefApi;
 }
 

@@ -1,3 +1,5 @@
+https://developers.weixin.qq.com/minigame/dev/api/
+
 ```ts
 const Test: ApiNameSpace = {
     name: 'wx',

@@ -22,6 +22,7 @@ export type SubChildRawInfo = {
     type: SubChildRawType;
     level: number;
     con: string | TableInfo[];
+    ref_name?: string;
 };
 /** 解析刺激页面item的原始信息 */
 export function parseSubChildRawInfo(
@@ -30,21 +31,7 @@ export function parseSubChildRawInfo(
 ): SubChildRawInfo {
     const tag_list = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
     const tag = item.tagName;
-    if (tag_list.indexOf(tag) !== -1) {
-        const level = Number(tag[1]);
-        return {
-            type: SubChildRawType.Text,
-            con: $(item).text(),
-            level,
-        };
-    }
-    if (tag === 'p') {
-        return {
-            type: SubChildRawType.Text,
-            con: $(item).text(),
-            level: 10,
-        };
-    }
+
     if ($(item).is('.table-wrp')) {
         return {
             type: SubChildRawType.Table,
@@ -52,6 +39,43 @@ export function parseSubChildRawInfo(
             level: 10,
         };
     }
+    const [con, ref_name] = extraCon(item, $);
+    if (tag_list.indexOf(tag) !== -1) {
+        const level = Number(tag[1]);
+        return {
+            type: SubChildRawType.Text,
+            con,
+            ref_name,
+            level,
+        };
+    }
+    if (tag === 'p') {
+        return {
+            type: SubChildRawType.Text,
+            con,
+            ref_name,
+            level: 10,
+        };
+    }
+}
+
+function extraCon(node: CheerioElement, $: CheerioStatic) {
+    const a = $('a', node);
+    const node_text = $(node).text();
+    let ref_name = '';
+    if (a.length) {
+        // tslint:disable-next-line
+        for (let i = 0; i < a.length; i++) {
+            const item = $(a[i]);
+            const item_text = item.text();
+            const is_rel_con = node_text === `# ` + item_text;
+            if (is_rel_con) {
+                ref_name = item.text();
+                break;
+            }
+        }
+    }
+    return [node_text, ref_name];
 }
 
 export function detectPutMatch(item: SubChildRawInfo) {

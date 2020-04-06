@@ -14,9 +14,10 @@ type MatchItem = MatchRawItem & {
     item: ApiBase;
     trigger: boolean;
     trigger_fun: MatchFun;
-    match_sub_arr?: Array<MatchFun>;
+    match_sub_arr?: MatchFun[];
     match_fun: MatchFun;
 };
+
 export function runMatch(item: SubChildRawInfo) {
     for (let len = match_arr.length, i = len - 1; i >= 0; i--) {
         const { match_fun, trigger, trigger_fun } = match_arr[i];
@@ -25,6 +26,7 @@ export function runMatch(item: SubChildRawInfo) {
         if (!trigger && !trigger_fun(item)) {
             continue;
         }
+
         const is_match = match_fun(item);
         if (is_match) {
             break;
@@ -81,7 +83,8 @@ function createTriggerFun(own_item: MatchItem): MatchItem['match_fun'] {
     const { level, item } = own_item;
 
     return (raw_item: SubChildRawInfo) => {
-        const { level: match_level, con, type } = raw_item;
+        const { level: match_level, con } = raw_item;
+
         if (level >= match_level) {
             outMatch(own_item);
             return false;
@@ -106,7 +109,7 @@ function createMatchFunFun(own_item: MatchItem): MatchItem['match_fun'] {
             return false;
         }
         if (type === SubChildRawType.Text) {
-            let txt_con = con as string;
+            const txt_con = con as string;
             if (txt_con.indexOf('返回值') !== -1) {
                 match_sub_arr.push(createMatchSubReturnFun(item));
                 return true;
@@ -151,16 +154,16 @@ function createMatchObjFun(own_item: MatchItem): MatchItem['match_fun'] {
                 if (!item.props) {
                     item.props = {};
                 }
-                const { name, comment, type } = con_item;
+                const { name, comment, type: _type } = con_item;
                 const new_item = {
                     name,
                     comment,
-                    type,
+                    type: _type,
                 };
-                if (type === ApiType.Fun || type === ApiType.Obj) {
+                if (_type === ApiType.Fun || _type === ApiType.Obj) {
                     putMatch(
                         name,
-                        { type, level: level + 0.5, trigger: false },
+                        { type: _type, level: level + 0.5, trigger: false },
                         new_item,
                     );
                 }
@@ -213,18 +216,19 @@ function createMatchSubCommentFun(item: ApiBase): MatchItem['match_fun'] {
 /** 创建函数参数监听 */
 function createMatchSubParamsFun(item: ApiFun): MatchItem['match_fun'] {
     const fn = (raw_item: SubChildRawInfo) => {
-        const { level: match_level, con, type } = raw_item;
+        const { level: match_level, con, type, ref_name } = raw_item;
 
         if (type === SubChildRawType.Text) {
-            const { type, name } = detectType(con as string);
+            const { type: _type, name } = detectType(con as string);
             const param_item = {
                 name,
-                type,
+                type: _type,
+                ref_name,
             } as ApiBase;
             item.params.push(param_item);
             putMatch(
                 name,
-                { type, level: match_level, trigger: true },
+                { type: _type, level: match_level, trigger: true },
                 param_item,
             );
             return true;
@@ -239,18 +243,18 @@ function createMatchSubParamsFun(item: ApiFun): MatchItem['match_fun'] {
 /** 创建函数返回值监听 */
 function createMatchSubReturnFun(item: ApiFun): MatchItem['match_fun'] {
     const fn = (raw_item: SubChildRawInfo) => {
-        const { level: match_level, con, type } = raw_item;
-
+        const { level: match_level, con, type, ref_name } = raw_item;
         if (type === SubChildRawType.Text) {
-            const { type, name } = detectType(con as string);
+            const { type: _type, name } = detectType(con as string);
             const param_item = {
                 name,
-                type,
+                type: _type,
+                ref_name,
             } as ApiBase;
             item.return_type = param_item;
             putMatch(
                 name,
-                { type, level: match_level, trigger: true },
+                { type: _type, level: match_level, trigger: true },
                 param_item,
             );
             return true;

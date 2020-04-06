@@ -19,7 +19,7 @@ export async function parseHtml(base_url: string, listener: Listener) {
     const dist = path.resolve(__dirname, '../dist');
     await clear(dist);
 
-    const child_list = con.childNodes.filter(item => {
+    const child_list = con.childNodes.filter((item) => {
         if (isEmpty(item)) {
             return false;
         }
@@ -39,9 +39,10 @@ export async function parseHtml(base_url: string, listener: Listener) {
             const { url, name } = item_info;
 
             /** @test */
-            // if (name !== 'UpdateManager.applyUpdate') {
-            //     continue;
-            // }
+            if (name === 'wx.onShow') {
+                // continue;
+                return;
+            }
             try {
                 const result = await parseSubPage(base_url + url);
                 result.full_name = name;
